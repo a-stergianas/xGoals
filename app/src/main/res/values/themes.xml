@@ -2,6 +2,6 @@
 <resources>
 
     <style name="Theme.XGoals" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/backgroundGrey</item>
+        <item name="android:statusBarColor">@color/lightGrey</item>
     </style>
 </resources>

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">xGoals</string>
+    <string name="title_activity_match">MatchActivity</string>
 </resources>
