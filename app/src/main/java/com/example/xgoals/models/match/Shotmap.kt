@@ -6,7 +6,7 @@ data class Shotmap (
 
 data class Shots(
     val id: Long,
-    //val eventType: String,
+    val eventType: String,
     val teamId: Int,
     //val playerId: Int,
     //val playerName: String,

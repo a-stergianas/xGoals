@@ -13,7 +13,7 @@ data class MatchFacts (
     //val topPlayers: Int,
     //val insights: Int,
     //val topScorers: Int,
-    val QAData: List<QAData>
+    //val QAData: List<QAData>
 )
 
 data class QAData(

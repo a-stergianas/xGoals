@@ -1,10 +1,10 @@
 package com.example.xgoals.models.match
 
 data class Content (
-    //val matchFacts: MatchFacts,
+    val matchFacts: MatchFacts,
     //val liveticker: Liveticker,
     //val buzz: Int,
-    //val stats: Stats1,
+    val stats: Stats1,
     val shotmap: Shotmap,
     //val lineup: Lineup,
     //val playoff: Boolean,

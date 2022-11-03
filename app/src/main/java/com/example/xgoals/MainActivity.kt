@@ -2,6 +2,8 @@ package com.example.xgoals
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,6 +30,52 @@ import java.util.*
 
 class MainActivity : ComponentActivity() {
 
+    private val acceptedLeagues = listOf<Int>(
+        113,
+        38,
+        40,
+        46,
+        47,
+        48,
+        108,
+        109,
+        247,
+        133,
+        53,
+        54,
+        146,
+        9478,
+        55,
+        230,
+        57,
+        59,
+        61,
+        10215,
+        64,
+        87,
+        67,
+        69,
+        71,
+        130,
+        42,
+        73,
+        10216,
+        9806,
+        9807,
+        9808,
+        9809,
+        292
+    )
+    private val possiblyAcceptedLeagues = listOf<Int>(
+        9381,
+        149,
+        222,
+        187,
+        139,
+        50,
+        77
+    )
+
     private var leagues = mutableStateListOf<League>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +84,7 @@ class MainActivity : ComponentActivity() {
         val date = Calendar.getInstance()
         val year = date.get(Calendar.YEAR).toString()
         val month =
-            if(date.get(Calendar.MONTH)+1-1<10)
+            if(date.get(Calendar.MONTH)+1<10)
                 "0${(date.get(Calendar.MONTH)+1)}"
             else
                 (date.get(Calendar.MONTH)+1).toString()
@@ -47,9 +95,16 @@ class MainActivity : ComponentActivity() {
                 date.get(Calendar.DAY_OF_MONTH).toString()
 
         //val url = "https://www.fotmob.com/api/matches?date=$year$month$day"
-        val url = "https://www.fotmob.com/api/matches?date=20221024"
+        val url = "https://www.fotmob.com/api/matches?date=20221102"
 
-        fetchJson(url)
+        val mainHandler = Handler(Looper.getMainLooper())
+
+        mainHandler.post(object : Runnable {
+            override fun run() {
+                fetchJson(url)
+                mainHandler.postDelayed(this, 10000)
+            }
+        })
 
         val intent = Intent(this, MatchActivity::class.java)
 
@@ -63,7 +118,9 @@ class MainActivity : ComponentActivity() {
                         backgroundColor = lightGrey,
                         contentColor = Color.White,
                         actions = {
-                            IconButton(onClick = { }) {
+                            IconButton(onClick = {
+                                fetchJson(url)
+                            }) {
                                 Icon(
                                     painter = painterResource(
                                         id = R.drawable.ic_twotone_calendar_today_24
@@ -108,16 +165,24 @@ class MainActivity : ComponentActivity() {
                                     verticalAlignment = Alignment.CenterVertically
                                 ){
                                     Image(
-                                        painter = rememberAsyncImagePainter(
-                                            "https://images.fotmob.com/image_resources/logo/teamlogo/${league.ccode.lowercase()}.png"
-                                        ),
+                                        painter =
+                                            if(league.primaryId != 114)
+                                                rememberAsyncImagePainter(model = "https://images.fotmob.com/image_resources/logo/leaguelogo/dark/${league.primaryId}.png")
+                                            else
+                                                rememberAsyncImagePainter(model = "https://images.fotmob.com/image_resources/logo/teamlogo/int.png"),
                                         contentDescription = "${league.ccode} flag",
                                         modifier = Modifier
                                             .size(16.dp)
                                             .padding(0.dp)
                                     )
+                                    if (league.name.takeLast(6).dropLast(1) == "Grp. ")
+                                        league.name = league.name.dropLast(6) + "- Group " + league.name.takeLast(1)
                                     Text(
-                                        text = league.name,
+                                        text =
+                                            if( league.ccode != "INT")
+                                                league.ccode + " - " + league.name
+                                            else
+                                                league.name,
                                         color = Color.White,
                                         modifier = Modifier
                                             .padding(horizontal = 8.dp))
@@ -147,7 +212,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                         Image(
                                             painter = rememberAsyncImagePainter(
-                                                "https://images.fotmob.com/image_resources/logo/teamlogo/${match.home.id}_xsmall.png"
+                                                "https://images.fotmob.com/image_resources/logo/teamlogo/${match.home.id}.png"
                                             ),
                                             contentDescription = "${match.home.name} logo",
                                             modifier = Modifier
@@ -194,7 +259,7 @@ class MainActivity : ComponentActivity() {
                                         }
                                         Image(
                                             painter = rememberAsyncImagePainter(
-                                                "https://images.fotmob.com/image_resources/logo/teamlogo/${match.away.id}_xsmall.png"
+                                                "https://images.fotmob.com/image_resources/logo/teamlogo/${match.away.id}.png"
                                             ),
                                             contentDescription = "${match.away.name} logo",
                                             modifier = Modifier
@@ -231,8 +296,11 @@ class MainActivity : ComponentActivity() {
                     val gson = GsonBuilder().create()
                     val homeFeed = gson.fromJson(body, HomeFeed::class.java)
 
-                    for(i in 0 until homeFeed.leagues.size){
-                        leagues.add(homeFeed.leagues[i])
+                    leagues.clear()
+
+                    for(league in homeFeed.leagues){
+                        if(acceptedLeagues.contains(league.primaryId) or possiblyAcceptedLeagues.contains(league.primaryId))
+                            leagues.add(league)
                     }
                 }
                 override fun onFailure(call: Call, e: java.io.IOException) {
